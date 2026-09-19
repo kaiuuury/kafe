@@ -1,0 +1,11 @@
+node_modules/
+.npm-cache/
+dist/
+.env
+.env.*
+!.env.example
+*.log
+*.pem
+*.key
+.wrangler/
+test-results/
