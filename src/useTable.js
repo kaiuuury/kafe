@@ -1,13 +1,29 @@
-import {useEffect,useRef,useState} from 'react';
+import {useCallback,useEffect,useRef,useState} from 'react';
 
 export function useTable(room,name,initial){
  const session=useRef(null),initialSettings=useRef(initial),mediaLock=useRef(null);
  const profile=useRef({mic:false,cam:false,drink:'Café'});
+ const selected=useRef({audio:'',video:''}),deviceLifecycle=useRef({active:false,request:0});
+ const [devices,setDevices]=useState([]),[selectedDevices,setSelectedDevices]=useState({audio:'',video:''});
  const [attempt,setAttempt]=useState(0),[ready,setReady]=useState(false),[canRetry,setCanRetry]=useState(false);
  const [status,setStatus]=useState('Preparando sua mesa…'),[error,setError]=useState(''),[peer,setPeer]=useState(null);
  const [localStream,setLocalStream]=useState(null),[remoteStream,setRemoteStream]=useState(null);
  const [mic,setMic]=useState(false),[cam,setCam]=useState(false),[busy,setBusy]=useState('');
  const [shared,setShared]=useState({ritual:1,question:0,scene:0});
+ const refreshDevices=useCallback(async()=>{
+   const lifecycle=deviceLifecycle.current,request=++lifecycle.request;
+   if(!navigator.mediaDevices?.enumerateDevices){if(lifecycle.active)setDevices([]);return []}
+   try{
+     const list=(await navigator.mediaDevices.enumerateDevices()).filter(d=>['audioinput','videoinput'].includes(d.kind)).map(({deviceId,kind,label})=>({deviceId,kind,label}));
+     if(lifecycle.active&&request===lifecycle.request)setDevices(list);
+     return list;
+   }catch{return []}
+ },[]);
+ useEffect(()=>{
+   const lifecycle=deviceLifecycle.current,media=navigator.mediaDevices;lifecycle.active=true;
+   const changed=()=>{void refreshDevices()};changed();media?.addEventListener?.('devicechange',changed);
+   return()=>{lifecycle.active=false;lifecycle.request++;media?.removeEventListener?.('devicechange',changed)};
+ },[]);
  const send=data=>{const s=session.current;if(s?.active&&s.ws?.readyState===WebSocket.OPEN)s.ws.send(JSON.stringify(data));};
  const updateMedia=s=>{
    if(session.current!==s||!s.active)return;
@@ -84,38 +100,45 @@ export function useTable(room,name,initial){
    }catch{if(s.active){setCanRetry(true);setError('Não foi possível preparar a mesa. Verifique sua conexão.')}}})();
    return()=>{s.active=false;clearInterval(s.heartbeat);clearTimeout(s.connectTimer);s.ws?.close();closePeer();stopMedia()};
  },[room,name,attempt]);
- const changeMedia=async (kinds,label)=>{
-   const s=session.current;if(mediaLock.current||!s?.accepted||!s.active)return;
+ const changeMedia=async (kinds,label,deviceId)=>{
+   const s=session.current;if(mediaLock.current||!s?.accepted||!s.active)return false;
    const operation={session:s,stream:null};mediaLock.current=operation;
    const current=()=>mediaLock.current===operation&&session.current===s&&s.active&&s.accepted;
+   const switching=typeof deviceId==='string';
    setBusy(label);setError('');let acquired,adopted=false;
    try{
      const kind=kinds[0],key=kind==='audio'?'mic':'cam';
-     if(kinds.length===1&&profile.current[key]){
+     if(kinds.length===1&&profile.current[key]&&!switching){
        s.streams[kind]?.getTracks().forEach(t=>t.stop());delete s.streams[kind];profile.current[key]=false;
        updateMedia(s);await s.pc?.getTransceivers().find(t=>t.receiver.track.kind===kind)?.sender.replaceTrack(null);
+       return current();
      }else{
        if(!navigator.mediaDevices?.getUserMedia)throw new Error('secure');
-       acquired=await navigator.mediaDevices.getUserMedia({
-         audio:kinds.includes('audio')?{echoCancellation:true,noiseSuppression:true}:false,
-         video:kinds.includes('video')?{width:{ideal:1280},height:{ideal:720}}:false
-       });operation.stream=acquired;
-       if(!current())return;
+       const constraints=kind=>{
+         if(!kinds.includes(kind))return false;
+         const id=switching?deviceId:selected.current[kind];
+         return {...(kind==='audio'?{echoCancellation:true,noiseSuppression:true}:{width:{ideal:1280},height:{ideal:720}}),...(id?{deviceId:{exact:id}}:{})};
+       };
+       acquired=await navigator.mediaDevices.getUserMedia({audio:constraints('audio'),video:constraints('video')});operation.stream=acquired;
+       if(!current())return false;
        const tracks=kinds.map(kind=>({kind,track:acquired.getTracks().find(t=>t.kind===kind&&t.readyState==='live')}));
        if(tracks.some(({track})=>!track))throw new Error('device');
        for(const {kind,track} of tracks){
          await s.pc?.getTransceivers().find(t=>t.receiver.track.kind===kind)?.sender.replaceTrack(track);
-         if(!current())return;
+         if(!current())return false;
        }
        for(const {kind,track} of tracks){
-         const key=kind==='audio'?'mic':'cam',stream=new MediaStream([track]);
+         const key=kind==='audio'?'mic':'cam',stream=new MediaStream([track]),previous=s.streams[kind];
          s.streams[kind]=stream;profile.current[key]=true;
          track.onended=()=>{if(session.current===s&&s.active&&s.streams[kind]===stream){delete s.streams[kind];profile.current[key]=false;updateMedia(s)}};
+         previous?.getTracks().forEach(t=>t.stop());
        }
-       adopted=true;updateMedia(s);
+       if(switching){selected.current={...selected.current,[kind]:deviceId};setSelectedDevices(selected.current)}
+       adopted=true;updateMedia(s);void refreshDevices();return true;
      }
    }catch(e){
-     if(current())setError(e.message==='secure'?'Câmera e microfone precisam de HTTPS ou localhost.':e.name==='NotAllowedError'?'A permissão foi recusada. Você pode liberá-la no navegador e tentar de novo.':'Não foi possível abrir esse dispositivo. Confira se ele está disponível.');
+     if(current())setError(e.message==='secure'?'Câmera e microfone precisam de HTTPS ou localhost.':e.name==='NotAllowedError'?'A permissão foi recusada. Você pode liberá-la no navegador e tentar de novo.':['NotFoundError','OverconstrainedError'].includes(e.name)?'Esse dispositivo não está disponível. Escolha outro nas configurações.':'Não foi possível abrir esse dispositivo. Confira se ele está disponível.');
+     return false;
    }finally{
      if(!adopted)acquired?.getTracks().forEach(t=>t.stop());
      if(mediaLock.current===operation){mediaLock.current=null;setBusy('')}
@@ -123,7 +146,14 @@ export function useTable(room,name,initial){
  };
  const toggle=kind=>changeMedia([kind],kind);
  const startVideoCall=()=>{if(!profile.current.mic&&!profile.current.cam)return changeMedia(['audio','video'],'call')};
- return {status,error,peer,localStream,remoteStream,mic,cam,busy,shared,ready,canRetry,toggle,startVideoCall,
+ const startVoiceCall=async()=>profile.current.mic||changeMedia(['audio'],'voice');
+ const selectDevice=async(kind,id)=>{
+   if(!['audio','video'].includes(kind)||typeof id!=='string'||mediaLock.current)return false;
+   if(id===selected.current[kind])return true;
+   if(profile.current[kind==='audio'?'mic':'cam'])return changeMedia([kind],kind,id);
+   selected.current={...selected.current,[kind]:id};setSelectedDevices(selected.current);return true;
+ };
+ return {status,error,peer,localStream,remoteStream,mic,cam,busy,shared,ready,canRetry,toggle,startVideoCall,startVoiceCall,devices,selectedDevices,refreshDevices,selectDevice,
    reconnect:()=>setAttempt(n=>n+1),setShared:change=>send({type:'shared',...change}),
    setDrink:drink=>{profile.current.drink=drink;send({type:'profile',...profile.current})}};
 }

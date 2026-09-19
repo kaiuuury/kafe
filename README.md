@@ -16,6 +16,15 @@ Prepare a mesa, copie o convite e envie à sua companhia. Cada participante pode
 
 A versão pública foi testada com duas sessões e dispositivos de áudio/vídeo simulados. O serviço TURN ainda não está configurado: chamadas podem falhar em redes que impedem conexão direta entre participantes. A hospedagem atual acrescenta seu próprio selo à página.
 
+## Chamada do seu jeito
+
+- **Entrar só por voz:** liga apenas o microfone. A câmera pode ser ligada depois.
+- **Ajustar áudio e vídeo:** permite escolher microfone e câmera antes de ligar ou durante a conversa. Abrir os ajustes não ativa os dispositivos. Durante a chamada, a troca preserva o dispositivo anterior se o novo falhar.
+- **Som da chamada:** silencia apenas o que você ouve. O volume da companhia é separado do som ambiente e não altera o microfone de ninguém.
+- **Estado do microfone:** cada cadeira mostra se o microfone está ligado ou desligado.
+
+As referências de experiência são os [ajustes de dispositivos do Google Meet](https://support.google.com/meet/answer/10409699?hl=pt-BR), a entrada por [canal de voz do Discord](https://support.discord.com/hc/en-us/articles/19583625604887-Voice-Channels-FAQs) e os [ajustes de voz do Steam](https://help.steampowered.com/en/faqs/view/1E45-57ED-9153-7EF4). O Kafé mantém seu próprio visual e o encontro para duas pessoas.
+
 ## Sete jeitos de encontrar
 
 - **Um gole, uma novidade:** contar e acolher o que aconteceu.
