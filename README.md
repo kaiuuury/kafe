@@ -4,9 +4,9 @@ Uma cafeteria virtual para duas pessoas. Um convite à companhia, às ideias e a
 
 **Kafé é parte da Krow System e uma expressão do Repouso da Asa.** O encontro pode acontecer numa cafeteria, em casa ou numa caminhada: presença sem pressa, espaço para pensar e liberdade para deixar a conversa encontrar seu ritmo.
 
-> “Pense com o pés” — Kaiury, Krow System.
+> “Pense com os pés” — Kaiury, Krow System.
 
-A frase é mantida na grafia do autor. No ritual de caminhada, cada pessoa pode seguir um caminho tranquilo, conversar por áudio e deixar as ideias aparecerem pelo percurso — uma inspiração peripatética.
+Um passeio com alguém por uma praça, um shopping ou outro lugar: caminhar, conversar e ter ideias em movimento — uma inspiração peripatética.
 
 ## Experimentar
 
@@ -24,7 +24,7 @@ A versão pública foi testada com duas sessões e dispositivos de áudio/vídeo
 - **Museu da semana:** um objeto abre uma história.
 - **Café de outro lugar:** apresentar uma vista ou uma lembrança.
 - **Carta para o próximo café:** deixar um assunto para continuar.
-- **Pense com o pés:** caminhar e conversar por áudio, cada um no seu ritmo.
+- **Pense com os pés:** passear com alguém por uma praça, um shopping ou outro lugar e ter ideias em movimento.
 
 ## Rodar no seu computador
 
