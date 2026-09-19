@@ -10,7 +10,11 @@ A frase é mantida na grafia do autor. No ritual de caminhada, cada pessoa pode 
 
 ## Experimentar
 
+**[Abrir o Kafé](https://kafe-krow.higgsfield.app)** — acesso público, sem cadastro.
+
 Prepare a mesa, copie o convite e envie à sua companhia. Cada participante liga câmera e microfone quando quiser. O link dá acesso à mesa; compartilhe apenas com a pessoa convidada. Há duas cadeiras por encontro, sem cadastro e sem gravação pelo aplicativo.
+
+A versão pública foi testada com duas sessões e dispositivos de áudio/vídeo simulados. O serviço TURN ainda não está configurado: chamadas podem falhar em redes que impedem conexão direta entre participantes. A hospedagem atual acrescenta seu próprio selo à página.
 
 ## Sete jeitos de encontrar
 
