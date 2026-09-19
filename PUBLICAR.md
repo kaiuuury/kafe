@@ -41,7 +41,7 @@ O endpoint de configuração é acessível aos visitantes. Ative quotas e alerta
 
 Use dois aparelhos, um no Wi-Fi e outro no 4G/5G. Ambos precisam ouvir e ver o outro. Para validar a retransmissão, repita em ambiente de teste com `iceTransportPolicy: 'relay'` e confirme áudio/vídeo recebido. Teste também a terceira pessoa barrada, ritual compartilhado, saída e reconexão. Ao sair ou perder a sessão, os dispositivos devem desligar; ao reconectar, o convite permanece o mesmo.
 
-Celulares podem suspender câmera, áudio ou conexão quando o navegador vai para segundo plano ou a tela é bloqueada. Para o ritual de caminhada, mantenha a página ativa e use áudio; o Kafé não promete chamada em segundo plano.
+Celulares podem suspender câmera, áudio ou conexão quando o navegador vai para segundo plano ou a tela é bloqueada. Se optar por usar uma chamada do Kafé durante o passeio, mantenha a página ativa; o aplicativo não promete chamada em segundo plano.
 
 ## Domínio próprio
 
